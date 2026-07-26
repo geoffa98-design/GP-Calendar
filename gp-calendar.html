@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',system-ui,sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
+body{font-family:'Nunito',system-ui,sans-serif;background:#fdf0ee;color:#1a1a1a;min-height:100vh}
 .app{max-width:1100px;margin:0 auto;padding:1rem}
-.banner{position:relative;width:100%;height:260px;border-radius:16px;overflow:hidden;margin-bottom:1rem;}
-.banner-bg{position:absolute;inset:0;background-image:url('banner.jpg');background-position:center 35%;background-size:cover;background-repeat:no-repeat;background-position:center 35%;background-size:cover;background-repeat:no-repeat;}
+.banner{position:relative;width:100%;height:380px;border-radius:16px;overflow:hidden;margin-bottom:1rem;}
+.banner-bg{position:absolute;inset:0;background-image:url('banner.jpg');background-position:center 40%;background-size:cover;background-repeat:no-repeat;background-position:center 40%;background-size:cover;background-repeat:no-repeat;}
 .banner-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.55) 100%);display:flex;align-items:center;justify-content:center;}
 .banner-title{font-family:'Fredoka One',cursive;font-size:40px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,0.6);letter-spacing:1px;text-align:center;padding:0 1rem;}
 .header{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
@@ -127,6 +127,43 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
 .legend-swatch.local{background:#B8EDD1;border:1px solid #3DAA6A}
 .toolbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .toolbar-right{display:flex;gap:8px}
+.tab-btn{background:#fff;border:1px solid #e0e0e0;border-radius:20px;padding:8px 20px;cursor:pointer;font-size:14px;font-weight:600;font-family:'Nunito',sans-serif;color:#666;transition:all 0.2s}
+.tab-btn:hover{background:#f0f0f0}
+.tab-btn.tab-active{background:#378ADD;color:#fff;border-color:#378ADD}
+.bucket-container{background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden}
+.bucket-filters{padding:1rem;border-bottom:1px solid #e0e0e0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-btn{background:#f5f5f5;border:1px solid #e0e0e0;border-radius:20px;padding:4px 14px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Nunito',sans-serif;color:#555}
+.filter-btn:hover{background:#e8e8e8}
+.filter-btn.active{color:#fff;border-color:transparent}
+.filter-btn.cat-food.active{background:#E8735A}
+.filter-btn.cat-activities.active{background:#5BAD6F}
+.filter-btn.cat-bars.active{background:#9B59B6}
+.filter-btn.cat-all.active{background:#378ADD}
+.filter-btn.status-yet.active{background:#5BA4CF}
+.filter-btn.status-kinda.active{background:#E6C84A}
+.filter-btn.status-progress.active{background:#E6964A}
+.filter-btn.status-done.active{background:#5BAD6F}
+.filter-btn.status-all.active{background:#378ADD}
+.bucket-table{width:100%;border-collapse:collapse}
+.bucket-table th{padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:#666;border-bottom:1px solid #e0e0e0;background:#fafafa}
+.bucket-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.bucket-table tr:last-child td{border-bottom:none}
+.bucket-table tr:hover td{background:#fdf9f8}
+.status-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-yet{background:#DAEAF7;color:#2980B9}
+.status-kinda{background:#FEF3CD;color:#B7860B}
+.status-progress{background:#FDEBD0;color:#CA6F1E}
+.status-done{background:#D5F5E3;color:#1E8449}
+.cat-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.cat-food{background:#FADBD8;color:#C0392B}
+.cat-activities{background:#D5F5E3;color:#1E8449}
+.cat-bars{background:#E8DAEF;color:#6C3483}
+.cat-other{background:#EAF2F8;color:#1A5276}
+.runback-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#1a1a1a;color:#fff}
+.tick-btn{background:none;border:2px solid #ccc;border-radius:50%;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.tick-btn.ticked{background:#5BAD6F;border-color:#5BAD6F;color:#fff}
+.bucket-loading{padding:2rem;text-align:center;color:#999;font-size:14px}
+.bucket-empty{padding:2rem;text-align:center;color:#999;font-size:14px}
 </style>
 </head>
 <body>
@@ -156,6 +193,14 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
         <button class="nav-btn" id="btn-week" onclick="setView('week')">Week</button>
         <button class="nav-btn" id="btn-day" onclick="setView('day')">Day</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Page tabs -->
+  <div id="page-tabs" style="display:none;margin-bottom:1rem">
+    <div style="display:flex;gap:8px">
+      <button id="tab-calendar" class="tab-btn tab-active" onclick="switchPage('calendar')">📅 Calendar</button>
+      <button id="tab-bucket" class="tab-btn" onclick="switchPage('bucket')">✨ GP Bucket List</button>
     </div>
   </div>
 
@@ -201,6 +246,12 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
           <label>Start year</label>
           <input type="text" id="sheet-start-year" placeholder="2025">
         </div>
+              <div class="setup-card" style="margin-top:1rem;grid-column:1/-1">
+          <h3><span class="dot dot-green"></span> GP Bucket List Sheet</h3>
+          <label>Bucket List Sheet ID</label>
+          <input type="text" id="bucket-id" placeholder="1N5ArmLCAx5RIVtabSqVDHn_c_VX4036D6jtB-z6AEQ4">
+          <p class="hint">The Cool Ideas sheet ID.</p>
+        </div>
       </div>
       <div class="setup-footer">
         <button class="btn-primary" id="connect-btn" onclick="startAuth()">Connect with Google (read-only)</button>
@@ -224,6 +275,31 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
     </div>
     <div id="cal-container"></div>
   </div>
+  <!-- Bucket List Page -->
+  <div id="bucket-section" style="display:none">
+    <div class="toolbar-row">
+      <div style="font-size:14px;color:#666" id="bucket-count"></div>
+      <button class="btn-secondary btn-sm" onclick="loadBucketList()">↺ Refresh</button>
+    </div>
+    <div class="bucket-container">
+      <div class="bucket-filters" id="bucket-filters">
+        <span style="font-size:12px;font-weight:600;color:#555;margin-right:4px">Category:</span>
+        <button class="filter-btn cat-all active" onclick="setCatFilter('all', this)">All</button>
+        <button class="filter-btn cat-food" onclick="setCatFilter('food', this)">🍔 Food</button>
+        <button class="filter-btn cat-activities" onclick="setCatFilter('activities', this)">🎯 Activities</button>
+        <button class="filter-btn cat-bars" onclick="setCatFilter('bars', this)">🍸 Bars</button>
+        <button class="filter-btn cat-other" onclick="setCatFilter('other', this)">✨ Other</button>
+        <span style="font-size:12px;font-weight:600;color:#555;margin:0 4px 0 12px">Status:</span>
+        <button class="filter-btn status-all active" onclick="setStatusFilter('all', this)">All</button>
+        <button class="filter-btn status-yet" onclick="setStatusFilter('yet', this)">Yet To Do</button>
+        <button class="filter-btn status-kinda" onclick="setStatusFilter('kinda', this)">Kinda</button>
+        <button class="filter-btn status-progress" onclick="setStatusFilter('progress', this)">In Progress</button>
+        <button class="filter-btn status-done" onclick="setStatusFilter('done', this)">Completed</button>
+      </div>
+      <div id="bucket-body"><div class="bucket-loading">Loading GP Bucket List...</div></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- View events modal -->
@@ -285,7 +361,8 @@ function saveSettings() {
     sheetId: document.getElementById('sheet-id').value.trim(),
     sheetTab: document.getElementById('sheet-tab').value.trim(),
     startRow: document.getElementById('sheet-start-row').value.trim(),
-    startYear: document.getElementById('sheet-start-year').value.trim()
+    startYear: document.getElementById('sheet-start-year').value.trim(),
+    bucketId: document.getElementById('bucket-id') ? document.getElementById('bucket-id').value.trim() : ''
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
   return s;
@@ -306,6 +383,7 @@ function applySettings(s) {
   document.getElementById('sheet-tab').value = s.sheetTab || '';
   document.getElementById('sheet-start-row').value = s.startRow || '';
   document.getElementById('sheet-start-year').value = s.startYear || '';
+  if (document.getElementById('bucket-id')) document.getElementById('bucket-id').value = s.bucketId || '';
 }
 
 function showFullSetup() {
@@ -466,6 +544,7 @@ async function fetchAll(mode) {
   document.getElementById('quick-connect-section').style.display = 'none';
   document.getElementById('setup-section').style.display = 'none';
   document.getElementById('calendar-section').style.display = 'block';
+  document.getElementById('page-tabs').style.display = 'block';
   setView('month');
 }
 
@@ -757,6 +836,144 @@ if (savedSettings && savedSettings.clientId) {
 } else {
   document.getElementById('setup-section').style.display = 'block';
 }
+
+// ---- Bucket List ----
+var BUCKET_SHEET_ID = '';
+var BUCKET_TAB = 'The List';
+var bucketItems = [];
+var catFilter = 'all';
+var statusFilter = 'all';
+var localTicks = {};
+
+function loadLocalTicks() {
+  try { return JSON.parse(localStorage.getItem('gp_ticks') || '{}'); } catch(e) { return {}; }
+}
+function saveLocalTicks() { localStorage.setItem('gp_ticks', JSON.stringify(localTicks)); }
+
+function switchPage(page) {
+  document.getElementById('calendar-section').style.display = page === 'calendar' ? 'block' : 'none';
+  document.getElementById('bucket-section').style.display = page === 'bucket' ? 'block' : 'none';
+  document.getElementById('tab-calendar').classList.toggle('tab-active', page === 'calendar');
+  document.getElementById('tab-bucket').classList.toggle('tab-active', page === 'bucket');
+  if (page === 'bucket' && bucketItems.length === 0) loadBucketList();
+}
+
+async function loadBucketList() {
+  document.getElementById('bucket-body').innerHTML = '<div class="bucket-loading">Loading...</div>';
+  var s = loadSettings() || {};
+  BUCKET_SHEET_ID = s.bucketId || '1N5ArmLCAx5RIVtabSqVDHn_c_VX4036D6jtB-z6AEQ4';
+  if (!accessToken) { document.getElementById('bucket-body').innerHTML = '<div class="bucket-empty">Please connect with Google first.</div>'; return; }
+  try {
+    var range = encodeURIComponent(BUCKET_TAB + '!A2:F500');
+    var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + BUCKET_SHEET_ID + '/values/' + range;
+    var r = await fetch(url, {headers: {Authorization: 'Bearer ' + accessToken}});
+    if (!r.ok) throw new Error('Could not read bucket list sheet.');
+    var data = await r.json();
+    var rows = data.values || [];
+    bucketItems = rows.filter(function(r) { return r[0] && r[0].trim(); }).map(function(r, i) {
+      return {
+        id: 'item_' + i,
+        name: r[0] || '',
+        category: r[1] || '',
+        status: r[2] || '',
+        dateCompleted: r[3] || '',
+        runItBack: r[4] || '',
+        notes: r[5] || ''
+      };
+    });
+    localTicks = loadLocalTicks();
+    renderBucketList();
+  } catch(e) {
+    document.getElementById('bucket-body').innerHTML = '<div class="bucket-empty">Error: ' + e.message + '</div>';
+  }
+}
+
+function setCatFilter(val, btn) {
+  catFilter = val;
+  document.querySelectorAll('.filter-btn[onclick*="setCatFilter"]').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderBucketList();
+}
+
+function setStatusFilter(val, btn) {
+  statusFilter = val;
+  document.querySelectorAll('.filter-btn[onclick*="setStatusFilter"]').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderBucketList();
+}
+
+function getStatusClass(status) {
+  var s = (status || '').toLowerCase();
+  if (s.includes('yet') || s.includes('to do')) return 'status-yet';
+  if (s.includes('kinda')) return 'status-kinda';
+  if (s.includes('progress')) return 'status-progress';
+  if (s.includes('complete') || s.includes('done')) return 'status-done';
+  return 'status-yet';
+}
+
+function getCatClass(cat) {
+  var c = (cat || '').toLowerCase();
+  if (c.includes('food')) return 'cat-food';
+  if (c.includes('activit')) return 'cat-activities';
+  if (c.includes('bar')) return 'cat-bars';
+  return 'cat-other';
+}
+
+function matchesCatFilter(item) {
+  if (catFilter === 'all') return true;
+  var c = (item.category || '').toLowerCase();
+  if (catFilter === 'food') return c.includes('food');
+  if (catFilter === 'activities') return c.includes('activit');
+  if (catFilter === 'bars') return c.includes('bar');
+  if (catFilter === 'other') return !c.includes('food') && !c.includes('activit') && !c.includes('bar');
+  return true;
+}
+
+function matchesStatusFilter(item) {
+  if (statusFilter === 'all') return true;
+  var s = (item.status || '').toLowerCase();
+  if (statusFilter === 'yet') return s.includes('yet') || s.includes('to do');
+  if (statusFilter === 'kinda') return s.includes('kinda');
+  if (statusFilter === 'progress') return s.includes('progress');
+  if (statusFilter === 'done') return s.includes('complete') || s.includes('done');
+  return true;
+}
+
+function toggleTick(id) {
+  localTicks[id] = !localTicks[id];
+  saveLocalTicks();
+  renderBucketList();
+}
+
+function renderBucketList() {
+  var filtered = bucketItems.filter(function(item) {
+    return matchesCatFilter(item) && matchesStatusFilter(item);
+  });
+  document.getElementById('bucket-count').textContent = filtered.length + ' of ' + bucketItems.length + ' items';
+  if (filtered.length === 0) {
+    document.getElementById('bucket-body').innerHTML = '<div class="bucket-empty">No items match your filters.</div>';
+    return;
+  }
+  var html = '<table class="bucket-table"><thead><tr><th></th><th>Activity</th><th>Category</th><th>Status</th><th>Date Completed</th><th>Run It Back?</th><th>Notes</th></tr></thead><tbody>';
+  filtered.forEach(function(item) {
+    var ticked = localTicks[item.id];
+    var catClass = getCatClass(item.category);
+    var statusClass = getStatusClass(item.status);
+    var runBack = (item.runItBack || '').includes('BACK') ? '<span class="runback-badge">Run It BACK</span>' : '';
+    html += '<tr style="' + (ticked ? 'opacity:0.5;text-decoration:line-through' : '') + '">';
+    html += '<td><button class="tick-btn' + (ticked ? ' ticked' : '') + '" onclick="toggleTick(\x27' + item.id + '\x27)">' + (ticked ? '✓' : '') + '</button></td>';
+    html += '<td style="font-weight:500">' + item.name + '</td>';
+    html += '<td><span class="cat-badge ' + catClass + '">' + item.category + '</span></td>';
+    html += '<td><span class="status-badge ' + statusClass + '">' + item.status + '</span></td>';
+    html += '<td style="font-size:12px;color:#888">' + item.dateCompleted + '</td>';
+    html += '<td>' + runBack + '</td>';
+    html += '<td style="color:#888;font-size:12px">' + item.notes + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('bucket-body').innerHTML = html;
+}
+
 </script>
 </body>
 </html>
