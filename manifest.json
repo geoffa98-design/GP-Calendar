@@ -1,0 +1,15 @@
+{
+  "name": "GP Calendar",
+  "short_name": "GP Calendar",
+  "description": "Geoff and Paula's shared calendar and bucket list",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf0ee",
+  "theme_color": "#fdf0ee",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
