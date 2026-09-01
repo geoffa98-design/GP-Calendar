@@ -297,6 +297,13 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
   .filter-btn{flex-shrink:0;padding:6px 12px;font-size:12px}
   .bucket-container{border-radius:12px}
 
+
+  /* 3-day columns get room to breathe and snap-scroll horizontally */
+  .d3-scroll{gap:8px;margin:0 -2px;padding:0 2px 8px}
+  .d3-col{flex:0 0 78%}
+  .view-controls .nav-btn{padding:9px 0;font-size:12px}
+  .d3-item-title{font-size:13.5px}
+
   /* Debug box */
   .debug-box{font-size:10px;max-height:180px}
 }
@@ -313,6 +320,46 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
 @media (min-width: 701px) {
   .m-grid, .bucket-cards{display:none !important}
 }
+
+
+/* ===== 3-Day view ===== */
+.d3-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.d3-scroll::-webkit-scrollbar{height:6px}
+.d3-scroll::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+.d3-col{flex:1 0 0;min-width:0;scroll-snap-align:start;background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.d3-col.is-today{border-color:#378ADD;box-shadow:0 0 0 1px #378ADD}
+.d3-head{display:flex;align-items:baseline;gap:7px;padding:10px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa}
+.d3-col.is-today .d3-head{background:#EDF4FC}
+.d3-dow{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em}
+.d3-num{font-size:19px;font-weight:600;line-height:1}
+.d3-col.is-today .d3-num{color:#378ADD}
+.d3-mon{font-size:12px;color:#999}
+.d3-list{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1}
+.d3-item{display:flex;gap:6px;align-items:flex-start;padding:8px 10px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.d3-item.gcal{background:#E4EFFB;border-left:3px solid #378ADD}
+.d3-item.sheets{background:#FDF0DC;border-left:3px solid #EF9F27}
+.d3-item.local{background:#E3F6EC;border-left:3px solid #3DAA6A}
+.d3-item:active{filter:brightness(0.95)}
+.d3-item-body{flex:1;min-width:0}
+.d3-item-title{font-size:13px;font-weight:600;line-height:1.35;word-break:break-word}
+.d3-item-time{font-size:11px;color:#777;margin-top:2px}
+
+/* ===== Event detail sheet ===== */
+.ed-title{font-size:18px;font-weight:700;line-height:1.3;margin-bottom:14px;word-break:break-word}
+.ed-row{display:flex;align-items:center;gap:10px;font-size:14px;color:#444;padding:7px 0}
+.ed-ico{width:20px;text-align:center;flex-shrink:0}
+.ed-swatch{width:13px;height:13px;border-radius:4px;flex-shrink:0;margin:0 3px}
+.ed-swatch.gcal{background:#378ADD}
+.ed-swatch.sheets{background:#EF9F27}
+.ed-swatch.local{background:#3DAA6A}
+.ed-note{margin-top:14px;padding-top:12px;border-top:1px solid #f0f0f0;font-size:12px;color:#aaa}
+.ed-actions{margin-top:16px}
+.ed-delete{width:100%;background:#FCEBEB;border:1px solid #F0B8B8;color:#A32D2D;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif}
+.ed-delete:hover{background:#F8DCDC}
+
+/* Tappable agenda rows */
+.agenda-item.tappable{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.agenda-item.tappable:active{background:#f7f7f7}
 
 </style>
 </head>
@@ -341,6 +388,7 @@ input[type=text],input[type=date],input[type=time]{width:100%;padding:7px 10px;b
       <div class="view-controls">
         <button class="nav-btn" id="btn-month" onclick="setView('month')">Month</button>
         <button class="nav-btn" id="btn-week" onclick="setView('week')">Week</button>
+        <button class="nav-btn" id="btn-3day" onclick="setView('3day')">3 Day</button>
         <button class="nav-btn" id="btn-day" onclick="setView('day')">Day</button>
       </div>
     </div>
@@ -603,9 +651,9 @@ function deleteLocalEvent(id) {
   render();
 }
 
-function handleDelete(btn) {
-  var id = btn.getAttribute('data-id');
-  deleteLocalEvent(id);
+function handleDelete(btn, ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  deleteLocalEvent(btn.getAttribute('data-id'));
 }
 
 function quickConnect() {
@@ -815,7 +863,7 @@ function parseSheetCalendar(rows, startYear) {
             var evTxt = (eventRow[col] || '').trim();
             if (evTxt && !parseMonthDay(evTxt) && !/^\d+$/.test(evTxt) && evTxt.length > 0) {
               var d = new Date(yr, md.month, md.day);
-              events.push({title: evTxt, start: d.toISOString().split('T')[0], end: null, allDay: true, source: 'sheets', id: 's' + Math.random()});
+              events.push({title: evTxt, start: dayStr(d), end: null, allDay: true, source: 'sheets', id: 'sheet_' + currentYear + '_' + md.month + '_' + md.day + '_' + events.length});
             }
           }
           r = er + 1;
@@ -836,7 +884,7 @@ function openModal(dateStr) {
   document.getElementById('modal-body').innerHTML = evs.map(function(e) {
     var sourceLabel = e.source === 'gcal' ? myLabel : e.source === 'sheets' ? friendLabel : 'GP Event';
     var timeStr = !e.allDay ? ' - ' + formatTime(e.start) : '';
-    var deleteBtn = e.source === 'local' ? '<button class="modal-event-delete" data-id="' + e.id + '" onclick="handleDelete(this)">&#128465;</button>' : '';
+    var deleteBtn = e.source === 'local' ? '<button class="modal-event-delete" data-id="' + e.id + '" onclick="handleDelete(this, event)">&#128465;</button>' : '';
     return '<div class="modal-event"><div class="modal-event-dot ' + e.source + '"></div><div style="flex:1"><div class="modal-event-text">' + e.title + '</div><div class="modal-event-source">' + sourceLabel + timeStr + '</div></div>' + deleteBtn + '</div>';
   }).join('');
   document.getElementById('modal-overlay').style.display = 'flex';
@@ -863,7 +911,7 @@ function formatTime(iso) {
 
 function setView(v) {
   currentView = v;
-  ['month','week','day'].forEach(function(x) { document.getElementById('btn-'+x).classList.toggle('active', x===v); });
+  ['month','week','3day','day'].forEach(function(x) { document.getElementById('btn-'+x).classList.toggle('active', x===v); });
   render();
 }
 
@@ -872,6 +920,7 @@ function goToday() { currentDate = new Date(); selectedDay = dayStr(currentDate)
 function navPrev() {
   if (currentView === 'month') { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()-1, 1); selectedDay = null; }
   else if (currentView === 'week') currentDate = new Date(currentDate.getTime() - 7*86400000);
+  else if (currentView === '3day') currentDate = new Date(currentDate.getTime() - 3*86400000);
   else currentDate = new Date(currentDate.getTime() - 86400000);
   render();
 }
@@ -879,6 +928,7 @@ function navPrev() {
 function navNext() {
   if (currentView === 'month') { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 1); selectedDay = null; }
   else if (currentView === 'week') currentDate = new Date(currentDate.getTime() + 7*86400000);
+  else if (currentView === '3day') currentDate = new Date(currentDate.getTime() + 3*86400000);
   else currentDate = new Date(currentDate.getTime() + 86400000);
   render();
 }
@@ -886,9 +936,22 @@ function navNext() {
 function render() {
   var lbl = document.getElementById('period-label');
   var con = document.getElementById('cal-container');
-  if (currentView === 'month') { lbl.textContent = currentDate.toLocaleString('default', {month:'long', year:'numeric'}); con.innerHTML = renderMonth(); }
-  else if (currentView === 'week') { var wr = weekRange(currentDate); lbl.textContent = fmtRange(wr.start, wr.end); con.innerHTML = renderWeek(wr.start); }
-  else { lbl.textContent = currentDate.toLocaleDateString('default', {weekday:'long', day:'numeric', month:'long', year:'numeric'}); con.innerHTML = renderDay(currentDate); }
+  if (currentView === 'month') {
+    lbl.textContent = currentDate.toLocaleString('default', {month:'long', year:'numeric'});
+    con.innerHTML = renderMonth();
+  } else if (currentView === 'week') {
+    var wr = weekRange(currentDate);
+    lbl.textContent = fmtRange(wr.start, wr.end);
+    con.innerHTML = renderWeek(wr.start);
+  } else if (currentView === '3day') {
+    var s3 = threeDayStart(currentDate);
+    var e3 = new Date(s3); e3.setDate(s3.getDate()+2);
+    lbl.textContent = fmtRange(s3, e3);
+    con.innerHTML = render3Day(s3);
+  } else {
+    lbl.textContent = currentDate.toLocaleDateString('default', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    con.innerHTML = renderDay(currentDate);
+  }
 }
 
 function weekRange(d) {
@@ -926,9 +989,9 @@ function agendaItemHtml(e) {
   var meta = (e.allDay ? 'All day' : formatTime(e.start) + (e.end ? ' - ' + formatTime(e.end) : ''));
   meta += ' &middot; ' + sourceLabelFor(e.source);
   var del = e.source === 'local'
-    ? '<button class="agenda-del" data-id="' + e.id + '" onclick="handleDelete(this)">&#128465;</button>'
+    ? '<button class="agenda-del" data-id="' + e.id + '" onclick="handleDelete(this, event)">&#128465;</button>'
     : '';
-  return '<div class="agenda-item">'
+  return '<div class="agenda-item tappable" data-eid="' + e.id + '" onclick="handleEventTap(this)">'
        + '<div class="agenda-bar ' + e.source + '"></div>'
        + '<div class="agenda-body"><div class="agenda-title">' + e.title + '</div>'
        + '<div class="agenda-meta">' + meta + '</div></div>'
@@ -1096,10 +1159,82 @@ function renderDay(d) {
   else {
     html += '<div class="day-event-list">';
     evs.forEach(function(e) {
-      var deleteBtn = e.source === 'local' ? '<button class="modal-event-delete" data-id="' + e.id + '" onclick="handleDelete(this)">&#128465;</button>' : '';
+      var deleteBtn = e.source === 'local' ? '<button class="modal-event-delete" data-id="' + e.id + '" onclick="handleDelete(this, event)">&#128465;</button>' : '';
       html += '<div class="day-event-row"><div class="day-event-time">' + (e.allDay?'All day':formatTime(e.start)+(e.end?' - '+formatTime(e.end):'')) + '</div><div style="flex:1"><div class="day-event-title">' + e.title + '</div><span class="day-event-source ' + e.source + '">' + sourceLabelFor(e.source) + '</span></div>' + deleteBtn + '</div>';
     });
     html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ---------- Event detail sheet ---------- */
+
+function handleEventTap(el) {
+  openEventDetail(el.getAttribute('data-eid'));
+}
+
+function openEventDetail(id) {
+  var all = allEvents();
+  var e = null;
+  for (var i = 0; i < all.length; i++) { if (all[i].id === id) { e = all[i]; break; } }
+  if (!e) return;
+
+  var d = new Date(e.start.slice(0,10) + 'T00:00:00');
+  var when = d.toLocaleDateString('default', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  var time = e.allDay ? 'All day' : formatTime(e.start) + (e.end ? ' - ' + formatTime(e.end) : '');
+
+  var html = '<div class="ed-title">' + e.title + '</div>';
+  html += '<div class="ed-row"><span class="ed-ico">&#128197;</span><span>' + when + '</span></div>';
+  html += '<div class="ed-row"><span class="ed-ico">&#128337;</span><span>' + time + '</span></div>';
+  html += '<div class="ed-row"><span class="ed-swatch ' + e.source + '"></span><span>' + sourceLabelFor(e.source) + '</span></div>';
+  if (e.source === 'local') {
+    html += '<div class="ed-actions"><button class="ed-delete" data-id="' + e.id + '" onclick="handleDetailDelete(this)">Delete this event</button></div>';
+  } else {
+    html += '<div class="ed-note">Read-only &mdash; edit it in ' + (e.source === 'gcal' ? 'Google Calendar' : 'the sheet') + '.</div>';
+  }
+
+  document.getElementById('modal-title').textContent = 'Event';
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function handleDetailDelete(btn) {
+  deleteLocalEvent(btn.getAttribute('data-id'));
+}
+
+/* ---------- 3-Day view (scroll-snapping columns) ---------- */
+
+function threeDayStart(d) { var s = new Date(d); s.setHours(0,0,0,0); return s; }
+
+function render3Day(start) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var DOWS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var html = '<div class="d3-scroll">';
+  for (var i = 0; i < 3; i++) {
+    var d = new Date(start); d.setDate(start.getDate()+i);
+    var isToday = d.getTime() === today.getTime();
+    var evs = eventsOnDay(d);
+    html += '<div class="d3-col' + (isToday ? ' is-today' : '') + '">';
+    html += '<div class="d3-head"><span class="d3-dow">' + DOWS[d.getDay()] + '</span>'
+          + '<span class="d3-num">' + d.getDate() + '</span>'
+          + '<span class="d3-mon">' + d.toLocaleString('default', {month:'short'}) + '</span>'
+          + (isToday ? '<span class="agenda-today-pill">TODAY</span>' : '') + '</div>';
+    html += '<div class="d3-list">';
+    if (evs.length === 0) {
+      html += '<div class="agenda-empty">Nothing on</div>';
+    } else {
+      evs.forEach(function(e) {
+        var del = e.source === 'local'
+          ? '<button class="agenda-del" data-id="' + e.id + '" onclick="handleDelete(this, event)">&#128465;</button>'
+          : '';
+        html += '<div class="d3-item ' + e.source + '" data-eid="' + e.id + '" onclick="handleEventTap(this)">'
+              + '<div class="d3-item-body"><div class="d3-item-title">' + e.title + '</div>'
+              + (e.allDay ? '' : '<div class="d3-item-time">' + formatTime(e.start) + '</div>')
+              + '</div>' + del + '</div>';
+      });
+    }
+    html += '</div></div>';
   }
   html += '</div>';
   return html;
